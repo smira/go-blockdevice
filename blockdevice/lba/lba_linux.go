@@ -74,6 +74,8 @@ func NewLBA(f *os.File) (*LBA, error) {
 		optio = minio
 	}
 
+	minio, optio = 4096, 131072
+
 	// Seek to the end to get the size.
 	size, err := f.Seek(0, 2)
 	if err != nil {

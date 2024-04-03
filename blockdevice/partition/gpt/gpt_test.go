@@ -139,7 +139,7 @@ func (suite *GPTSuite) TestPartitionAdd() {
 }
 
 func (suite *GPTSuite) TestRepairResize() {
-	const newSize = 2 * size
+	const newSize = 15*size + size/2 + size/4
 
 	g, err := gpt.New(suite.Dev)
 	suite.Require().NoError(err)
