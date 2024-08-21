@@ -5,6 +5,7 @@
 package block
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -92,4 +93,55 @@ func (d *Device) GetKernelLastPartitionNum() (int, error) {
 	}
 
 	return maxPartNum, nil
+}
+
+// DumpKernelPartitions prints the kernel view of partitions.
+func (d *Device) DumpKernelPartitions() error {
+	sysFsPath, err := d.sysFsPath()
+	if err != nil {
+		return err
+	}
+
+	contents, err := os.ReadDir(sysFsPath)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range contents {
+		if !entry.IsDir() {
+			continue
+		}
+
+		contents := readSysFsFile(filepath.Join(sysFsPath, entry.Name(), "partition"))
+		if len(contents) == 0 {
+			continue
+		}
+
+		partNum, err := strconv.Atoi(contents)
+		if err != nil {
+			continue
+		}
+
+		contents = readSysFsFile(filepath.Join(sysFsPath, entry.Name(), "start"))
+
+		start, err := strconv.ParseUint(contents, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		start *= 512
+
+		contents = readSysFsFile(filepath.Join(sysFsPath, entry.Name(), "size"))
+
+		size, err := strconv.ParseUint(contents, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		size *= 512
+
+		log.Printf("%s Partition %d: start=%d, size=%d\n", sysFsPath, partNum, start, size)
+	}
+
+	return nil
 }
