@@ -313,6 +313,8 @@ func (d *Device) Unlock() error {
 		if err := unix.Flock(int(d.f.Fd()), unix.LOCK_UN); !errors.Is(err, unix.EINTR) {
 			return err
 		}
+
+		runtime.KeepAlive(d)
 	}
 }
 

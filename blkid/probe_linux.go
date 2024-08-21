@@ -127,6 +127,8 @@ func (i *Info) probe(f *os.File, chain chain.Chain, offset, length uint64, optio
 		size:       length,
 	}
 
+	options.Logger.Debug("magic first bytes", zap.Uint64("offset", offset), zap.Int("length", len(buf)), zap.Binary("bytes", buf[:128]))
+
 	for _, matched := range chain.MagicMatches(buf) {
 		res, err := matched.Prober.Probe(pR, matched.Magic)
 		if err != nil || res == nil {
