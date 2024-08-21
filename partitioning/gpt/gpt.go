@@ -42,6 +42,7 @@ type Device interface {
 	KernelPartitionAdd(no int, start, length uint64) error
 	KernelPartitionResize(no int, first, length uint64) error
 	KernelPartitionDelete(no int) error
+	DumpKernelPartitions() error
 }
 
 // Table is a wrapper type around GPT partition table.
