@@ -7,6 +7,7 @@
 package blkid
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/siderolabs/go-blockdevice/v2/blkid/internal/chain"
 	"github.com/siderolabs/go-blockdevice/v2/blkid/internal/probe"
-	"github.com/siderolabs/go-blockdevice/v2/internal/ioutil"
 )
 
 type probeReader struct {
@@ -114,9 +114,9 @@ func (i *Info) probe(f *os.File, chain chain.Chain, offset, length uint64, optio
 		magicReadSize = uint(length)
 	}
 
-	buf := make([]byte, magicReadSize)
+	buf := bytes.Repeat([]byte{0xff}, int(magicReadSize))
 
-	if err := ioutil.ReadFullAt(f, buf, int64(offset)); err != nil {
+	if _, err := f.ReadAt(buf, int64(offset)); err != nil {
 		return nil, nil, fmt.Errorf("error reading magic buffer: %w", err)
 	}
 
