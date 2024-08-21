@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+	"log"
 	"math"
 	"os"
 	"slices"
@@ -606,7 +607,11 @@ func (t *Table) syncKernel() error {
 		return fmt.Errorf("failed to get kernel last partition number: %w", err)
 	}
 
+	log.Printf("kernelPartitionNum: %d", kernelPartitionNum)
+
 	partitionNum := max(kernelPartitionNum, len(t.entries))
+
+	log.Printf("partitionNum: %d", partitionNum)
 
 	for no := 1; no <= partitionNum; no++ {
 		var myEntry *Partition
@@ -617,6 +622,8 @@ func (t *Table) syncKernel() error {
 		// try to delete the partition first
 		err := t.dev.KernelPartitionDelete(no)
 
+		log.Printf("delete no: %d, err: %v", no, err)
+
 		switch {
 		case errors.Is(err, unix.ENXIO):
 		// partition doesn't exist, ok
@@ -625,6 +632,9 @@ func (t *Table) syncKernel() error {
 			err = t.dev.KernelPartitionResize(no,
 				myEntry.FirstLBA*uint64(t.sectorSize),
 				(myEntry.LastLBA-myEntry.FirstLBA+1)*uint64(t.sectorSize))
+
+			log.Printf("resize no: %d, err: %v", no, err)
+
 			if err != nil {
 				return fmt.Errorf("failed to resize partition %d: %w", no, err)
 			}
@@ -640,6 +650,9 @@ func (t *Table) syncKernel() error {
 			myEntry.FirstLBA*uint64(t.sectorSize),
 			(myEntry.LastLBA-myEntry.FirstLBA+1)*uint64(t.sectorSize),
 		)
+
+		log.Printf("add no: %d, err: %v", no, err)
+
 		if err != nil {
 			return fmt.Errorf("failed to add partition %d: %w", no, err)
 		}
